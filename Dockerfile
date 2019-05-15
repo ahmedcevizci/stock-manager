@@ -1,0 +1,8 @@
+FROM openjdk:8-alpine
+
+ARG BUILD_DIR
+ARG JAR_FILE
+
+ENV JAR_FILE $JAR_FILE
+COPY /target/${JAR_FILE} /${JAR_FILE}
+CMD java -jar /$JAR_FILE
