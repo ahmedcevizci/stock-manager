@@ -17,9 +17,9 @@ import java.util.UUID;
         query = "WITH tbl_top_selling_stock AS" +
                 " (SELECT ABS(SUM(fld_quantity_change)) AS sold_quantity, fld_stock_id FROM tbl_stock_event" +
                 " WHERE fld_quantity_change < 0 AND fld_date_changed > ?1 " +
-                " GROUP BY fld_stock_id ORDER BY sold_quantity DESC)" +
+                " GROUP BY fld_stock_id ORDER BY sold_quantity DESC LIMIT ?2)" +
                 " SELECT tss.fld_stock_id, s.fld_product_id, tss.sold_quantity FROM tbl_top_selling_stock tss, tbl_stock s" +
-                " WHERE tss.fld_stock_id = s.fld_uuid ORDER BY tss.sold_quantity DESC LIMIT ?2")
+                " WHERE tss.fld_stock_id = s.fld_uuid ORDER BY tss.sold_quantity DESC")
 @SqlResultSetMapping(
         name = "topSellingProductResultMapping",
         entities = @EntityResult(
