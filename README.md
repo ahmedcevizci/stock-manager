@@ -57,7 +57,8 @@ mvn spring-boot:run
 ```
 
 ##### Generating API Documentation (Swagger)
-After running Stock Manager API, a swagger file is locally available at ```{{url}}/swagger-ui.html``` and should be fully usable as a rest client.
+After running Stock Manager API, a swagger file is locally available at ```{{url}}/swagger-ui.html``` and should be fully usable as a rest client. 
+Example: ```http://localhost:8082/swagger-ui.html```
 
 
 
