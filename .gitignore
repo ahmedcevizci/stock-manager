@@ -429,5 +429,3 @@ gradle-app.setting
 
 # directory that results form activeMQ integration tests
 business/plug/http-azure-plug/activemq-data/
-
-src/main/resources/application\.yml

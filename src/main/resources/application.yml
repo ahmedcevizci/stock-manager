@@ -1,0 +1,23 @@
+server:
+  port: 8082
+domain-name: localhost:8082
+spring:
+  application:
+    name: stock-manager
+  datasource:
+    username: alaz
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/stock_manager_db
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  profiles:
+    active: development
+stock:
+  manager:
+    top-available-product-count-to-show: 3
+    top-selling-product-count-to-show: 3
+flyway:
+  out-of-order: true
+  baseline-on-migrate: true

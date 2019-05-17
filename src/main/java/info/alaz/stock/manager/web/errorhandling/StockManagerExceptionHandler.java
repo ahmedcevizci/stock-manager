@@ -63,12 +63,12 @@ public class StockManagerExceptionHandler {
 
     @ExceptionHandler
     @ResponseBody
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<ErrorResponse> handleConflictRequest(final StockHasBeenUpdatedBeforeException ex) {
         logger.warn("Stock Manager Api Exception", ex.getMessage(), this.getClass().getName());
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-StockManagerAPIError", "error." + APIErrorHeaders.STOCK_UPDATED_BY_ANOTHER_REQUEST);
-        return createResponse(HttpStatus.BAD_REQUEST, headers, ex.getMessage());
+        return createResponse(HttpStatus.CONFLICT, headers, ex.getMessage());
     }
 
     @ExceptionHandler
