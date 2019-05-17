@@ -8,6 +8,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.time.ZonedDateTime;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ProductMapper extends GenericEntityDtoMapper<ProductResponseDto, ProductEntity> {
 
@@ -15,5 +17,6 @@ public interface ProductMapper extends GenericEntityDtoMapper<ProductResponseDto
     @Mapping(source = "stockEntity.quantity", target = "stock.quantity")//timestamp
     @Mapping(source = "stockEntity.dateUpdated", target = "stock.timestamp")//
     @Mapping(source = "productEntity.name", target = "productId")
-    ProductResponseDto toDto(ProductEntity productEntity, StockEntity stockEntity);
+    @Mapping(source = "requestTimestamp", target = "requestTimestamp")
+    ProductResponseDto toDto(ProductEntity productEntity, StockEntity stockEntity, ZonedDateTime requestTimestamp);
 }

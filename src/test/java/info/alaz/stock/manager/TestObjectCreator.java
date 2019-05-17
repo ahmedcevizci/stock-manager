@@ -12,4 +12,7 @@ public final class TestObjectCreator {
     public static final String EXISTING_PRODUCT_ID2 = "vegetable-122";
     public static final String EXISTING_PRODUCT_ID3 = "vegetable-123";
 
+    public static final String NOT_EXISTING_PRODUCT_ID = "ectoplasm-121";
+    public static final UUID NOT_EXISTING_STOCK_ID = new UUID(0, 0);
+
 }

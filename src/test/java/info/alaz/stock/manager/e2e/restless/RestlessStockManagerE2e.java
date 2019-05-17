@@ -86,6 +86,8 @@ public class RestlessStockManagerE2e {
 
         //When
         restlessStockManagerSteps.getStockOfAProduct(EXISTING_PRODUCT_ID1);
+
+        restlessStockManagerSteps.validateProductResponseDto(EXISTING_PRODUCT_ID1);
 //TODO
         /*
      {
@@ -110,7 +112,33 @@ public class RestlessStockManagerE2e {
 
         //When
         restlessStockManagerSteps.getStatisticsAboutProductsInStock(TimeSpan.TODAY);
+/*{
+    "requestTimestamp": "2019-05-17T02:26:22.820+0200",
+    "timeSpan": "TODAY",
+    "topAvailableProducts": [
+        {
+            "id": "d081fc48-332b-46d8-8b22-45eb8e02cc04",
+            "timestamp": "2019-04-24T18:05:24.000+0200",
+            "productId": "vegetable-124",
+            "quantity": 800
+        },
+        {
+            "id": "c081fc48-332b-46d8-8b22-35eb8e02cc03",
+            "timestamp": "2019-04-23T17:05:23.000+0200",
+            "productId": "vegetable-123",
+            "quantity": 700
+        },
+        {
+            "id": "920dddec-0900-4f8d-b4f1-a05ddeaa4159",
+            "timestamp": "2019-04-22T16:05:22.000+0200",
+            "productId": "vegetable-122",
+            "quantity": 600
+        }
+    ],
+    "topSellingProducts": [
 
+    ]
+}*/
         //Then
         restlessStockManagerSteps.validateHttpStatus(HttpStatus.OK);
     }
@@ -124,6 +152,45 @@ public class RestlessStockManagerE2e {
         //When
         restlessStockManagerSteps.getStatisticsAboutProductsInStock(TimeSpan.LAST_MONTH);
 
+        restlessStockManagerSteps.validateStatisticsResponseDto(TimeSpan.LAST_MONTH);
+/*{
+    "requestTimestamp": "2019-05-17T02:26:13.426+0200",
+    "timeSpan": "LAST_MONTH",
+    "topAvailableProducts": [
+        {
+            "id": "d081fc48-332b-46d8-8b22-45eb8e02cc04",
+            "timestamp": "2019-04-24T18:05:24.000+0200",
+            "productId": "vegetable-124",
+            "quantity": 800
+        },
+        {
+            "id": "c081fc48-332b-46d8-8b22-35eb8e02cc03",
+            "timestamp": "2019-04-23T17:05:23.000+0200",
+            "productId": "vegetable-123",
+            "quantity": 700
+        },
+        {
+            "id": "920dddec-0900-4f8d-b4f1-a05ddeaa4159",
+            "timestamp": "2019-04-22T16:05:22.000+0200",
+            "productId": "vegetable-122",
+            "quantity": 600
+        }
+    ],
+    "topSellingProducts": [
+        {
+            "productId": "vegetable-123",
+            "itemsSold": 205
+        },
+        {
+            "productId": "vegetable-121",
+            "itemsSold": 35
+        },
+        {
+            "productId": "vegetable-122",
+            "itemsSold": 105
+        }
+    ]
+}*/
         //Then
         restlessStockManagerSteps.validateHttpStatus(HttpStatus.OK);
     }

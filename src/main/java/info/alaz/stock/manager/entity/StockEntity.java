@@ -1,6 +1,8 @@
 package info.alaz.stock.manager.entity;
 
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OptimisticLockType;
 import org.hibernate.annotations.OptimisticLocking;
@@ -9,10 +11,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @DynamicUpdate
 //Necessary for optimistic locking, solving concurrent update problem (dirty read)
 @OptimisticLocking(type = OptimisticLockType.ALL)
@@ -39,4 +40,11 @@ public class StockEntity extends BaseEntity {
     @OrderBy(value = "dateUpdated DESC")
     private Set<StockEventEntity> stockEventEntitySet;
 
+    public StockEntity(UUID id, ProductEntity product, Integer quantity, ZonedDateTime dateUpdated, Set<StockEventEntity> stockEventEntitySet) {
+        super(id);
+        this.product = product;
+        this.quantity = quantity;
+        this.dateUpdated = dateUpdated;
+        this.stockEventEntitySet = stockEventEntitySet;
+    }
 }

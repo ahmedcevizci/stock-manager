@@ -5,12 +5,15 @@ import info.alaz.stock.manager.service.StockManagerService;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import static info.alaz.stock.manager.web.ParentStockManagerController.BASE_API_PATH;
 
 @Getter
+@RequestMapping(value = BASE_API_PATH)
 public abstract class ParentStockManagerController {
+
+    public static final String BASE_API_PATH = "/api/stock-manager";
 
     public static final String STOCK_MANAGER_V1_RESPONSE_MEDIA_TYPE = "application/vnd.alaz.info.sensor.manager.v1.response+json";
     public static final String APPLICATION_JSON = "application/json";
@@ -26,16 +29,5 @@ public abstract class ParentStockManagerController {
 
     public ParentStockManagerController(StockManagerService stockManagerService) {
         this.stockManagerService = stockManagerService;
-    }
-
-    @RequestMapping("/")
-    public String index() {
-        logger.trace("A TRACE Message");
-        logger.debug("A DEBUG Message");
-        logger.info("An INFO Message");
-        logger.warn("A WARN Message");
-        logger.error("An ERROR Message");
-
-        return "Howdy! Check out the Logs to see the output...";
     }
 }

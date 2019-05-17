@@ -22,7 +22,7 @@ public class RestlessStockManagerSteps {
         RestAssured.reset();
         RestAssured.urlEncodingEnabled = false;
         RestAssured.requestSpecification = new RequestSpecBuilder()
-                .setBasePath(BASE_RESTLESS_API_PATH)
+                .setBasePath(BASE_API_PATH)
                 .setPort(port)
                 .setContentType(ContentType.JSON)
                 .build();
@@ -34,7 +34,7 @@ public class RestlessStockManagerSteps {
                 .header(HttpHeaders.ACCEPT, STOCK_MANAGER_V1_RESPONSE_MEDIA_TYPE)
                 .body(productStockDto)
                 .when()
-                .post("/updateStock");
+                .post("/restless/updateStock");
     }
 
     @Step("Get stock of a given product")
@@ -43,7 +43,7 @@ public class RestlessStockManagerSteps {
                 .header(HttpHeaders.ACCEPT, STOCK_MANAGER_V1_RESPONSE_MEDIA_TYPE)
                 .queryParam(PARAM_PRODUCT_ID, productId)
                 .when()
-                .get("/stock");
+                .get("/restless/stock");
     }
 
     @Step("Get statistics about products in stock")
@@ -52,7 +52,7 @@ public class RestlessStockManagerSteps {
                 .header(HttpHeaders.ACCEPT, STOCK_MANAGER_V1_RESPONSE_MEDIA_TYPE)
                 .queryParam(PARAM_TIME, timeSpan.name())
                 .when()
-                .get("/statistics");
+                .get("/restless/statistics");
     }
 
     @Step("Validating Http status")
@@ -61,21 +61,18 @@ public class RestlessStockManagerSteps {
         response.prettyPrint();
     }
 
+    @Step("Validating statistics response dto")
+    public void validateStatisticsResponseDto(TimeSpan lastMonth) {
+    }
 
-/*    @Step("Validating TimeSpan")
-    public void validateTimeSpan(TimeSpan timeSpan) {
-        response.then()
-                .body(equalTo("\"" + timeSpan.name() + "\""));
-    }*/
-
-
-/*    @Step("Validating list")
-    public void validateList() {
-        response.then()
+    @Step("Validating product response dto")
+    public void validateProductResponseDto(String existingProductId1) {
+        /*        response.then()
+         .body(equalTo("\"" + timeSpan.name() + "\""));
                 .body("[0].startTime", equalTo("2019-04-21T20:05:15+0200"))
                 .body("[0].endTime", equalTo("2019-04-21T22:05:15+0200"))
                 .body("[1].startTime", equalTo("2019-04-21T19:05:15+0200"))
                 .body("[1].endTime", equalTo("2019-04-21T21:05:15+0200"))
-        response.prettyPrint();
-    }*/
+        response.prettyPrint();*/
+    }
 }

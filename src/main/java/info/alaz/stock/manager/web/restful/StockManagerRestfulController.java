@@ -24,17 +24,15 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static info.alaz.stock.manager.constant.APIOperationMessages.*;
-import static info.alaz.stock.manager.web.restful.StockManagerRestfulController.BASE_RESTFUL_API_PATH;
+import static info.alaz.stock.manager.web.ParentStockManagerController.BASE_API_PATH;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @Api(tags = {APITags.RESTFUL_STOCK_MANAGER_TAG}, hidden = true)
 @RestController
-@RequestMapping(value = BASE_RESTFUL_API_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+@RequestMapping(value = BASE_API_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = ParentStockManagerController.STOCK_MANAGER_V1_RESPONSE_MEDIA_TYPE)
 public class StockManagerRestfulController extends ParentStockManagerController {
-
-    public static final String BASE_RESTFUL_API_PATH = "/api/stock-manager/restful";
 
     private Logger logger = LoggerFactory.getLogger(StockManagerRestfulController.class);
 
@@ -52,7 +50,7 @@ public class StockManagerRestfulController extends ParentStockManagerController 
             @ApiResponse(code = 409, message = APIErrorMessages.STOCK_UPDATED_IN_THE_MEAN_TIME),
     })
     @ResponseStatus(NO_CONTENT)
-    @PutMapping(path = "/products/{" + PARAM_PRODUCT_ID + "}/stocks/{" + PARAM_STOCK_ID + "}")
+    @PutMapping(path = "/restful/products/{" + PARAM_PRODUCT_ID + "}/stocks/{" + PARAM_STOCK_ID + "}")
     public void updateStock(@PathVariable(PARAM_PRODUCT_ID) String productId, @PathVariable(PARAM_STOCK_ID) UUID stockId,
                             @Valid @RequestBody StockUpdateRequestDto stockUpdateRequestDto) throws Exception {
 
@@ -69,14 +67,12 @@ public class StockManagerRestfulController extends ParentStockManagerController 
             @ApiResponse(code = 404, message = APIErrorMessages.PRODUCT_NOT_FOUND)
     })
     @ResponseStatus(OK)
-    @GetMapping(path = "/products/{" + PARAM_PRODUCT_ID + "}")
+    @GetMapping(path = "/restful/products/{" + PARAM_PRODUCT_ID + "}")
     public ProductResponseDto getStockOfProduct(@PathVariable(value = PARAM_PRODUCT_ID) String productId) throws Exception {
 
         logger.info(String.format("Fetching stock of product: %s", productId));
 
-        ZonedDateTime requestTimestamp = ZonedDateTime.now();
-        ProductResponseDto productResponseDto = this.stockManagerService.getStockOfProduct(productId);
-        productResponseDto.setRequestTimestamp(requestTimestamp);
+        ProductResponseDto productResponseDto = this.stockManagerService.getStockOfProduct(productId, ZonedDateTime.now());
 
         logger.info(String.format("Fetched stock of product: %s", productId));
 
@@ -89,13 +85,12 @@ public class StockManagerRestfulController extends ParentStockManagerController 
             @ApiResponse(code = 200, message = APIOperationMessages.SUCCESS_CALCULATING_STATISTICS),
             @ApiResponse(code = 400, message = APIErrorMessages.UNDEFINED_TIME_SPAN)})
     @ResponseStatus(OK)
-    @GetMapping(path = "/statistics")
+    @GetMapping(path = "/restful/statistics")
     public StatisticsResponseDto getStatistics(@RequestParam(value = PARAM_TIME) TimeSpan timeSpan) throws Exception {
 
         logger.info(String.format("Fetching statistics of %s", timeSpan.name()));
 
-        StatisticsResponseDto statisticsResponseDto = this.stockManagerService.getStatistics(timeSpan);
-        statisticsResponseDto.setRequestTimestamp(ZonedDateTime.now());
+        StatisticsResponseDto statisticsResponseDto = this.stockManagerService.calculateStatistics(timeSpan, ZonedDateTime.now());
 
         logger.info(String.format("Fetched statistics of %s", timeSpan.name()));
         return statisticsResponseDto;

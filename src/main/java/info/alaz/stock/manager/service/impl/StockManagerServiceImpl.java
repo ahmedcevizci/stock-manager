@@ -1,14 +1,15 @@
 package info.alaz.stock.manager.service.impl;
 
 import info.alaz.stock.manager.config.StockManagerProperties;
-import info.alaz.stock.manager.dto.*;
+import info.alaz.stock.manager.dto.ProductResponseDto;
+import info.alaz.stock.manager.dto.StatisticsResponseDto;
+import info.alaz.stock.manager.dto.TimeSpan;
 import info.alaz.stock.manager.entity.ProductEntity;
 import info.alaz.stock.manager.entity.StockEntity;
 import info.alaz.stock.manager.entity.StockEventEntity;
 import info.alaz.stock.manager.entity.TopSellingProductEntity;
 import info.alaz.stock.manager.exception.*;
 import info.alaz.stock.manager.mapper.ProductMapper;
-import info.alaz.stock.manager.mapper.StockMapper;
 import info.alaz.stock.manager.repository.ProductRepository;
 import info.alaz.stock.manager.repository.StockEventRepository;
 import info.alaz.stock.manager.repository.StockRepository;
@@ -28,7 +29,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
+import static info.alaz.stock.manager.mapper.StatisticsMapper.mapToStatisticsResponseDto;
 
 @Service
 public class StockManagerServiceImpl implements StockManagerService {
@@ -38,20 +40,18 @@ public class StockManagerServiceImpl implements StockManagerService {
     private ProductRepository productRepository;
     private StockRepository stockRepository;
     private StockEventRepository stockEventRepository;
-    private StockMapper stockMapper;
     private ProductMapper productMapper;
     private StockManagerProperties stockManagerProperties;
     private TopSellingEntityRepository topSellingEntityRepository;
 
     @Autowired
     public StockManagerServiceImpl(ProductRepository productRepository, StockRepository stockRepository,
-                                   StockEventRepository stockEventRepository, StockMapper stockMapper,
-                                   ProductMapper productMapper, StockManagerProperties stockManagerProperties,
-                                   TopSellingEntityRepository topSellingEntityRepository) {
+                                   StockEventRepository stockEventRepository, TopSellingEntityRepository topSellingEntityRepository,
+                                   ProductMapper productMapper,
+                                   StockManagerProperties stockManagerProperties) {
         this.productRepository = productRepository;
         this.stockRepository = stockRepository;
         this.stockEventRepository = stockEventRepository;
-        this.stockMapper = stockMapper;
         this.productMapper = productMapper;
         this.stockManagerProperties = stockManagerProperties;
         this.topSellingEntityRepository = topSellingEntityRepository;
@@ -61,10 +61,10 @@ public class StockManagerServiceImpl implements StockManagerService {
     @Transactional
     public void updateStock(UUID stockUuid, String productId, Integer newQuantity, ZonedDateTime updateTimestamp)
             throws StockNotFoundException, ProductNotFoundException, StockNotBelongToProductException,
-            StockUpdateTimestampCannotBeInFutureException, StockHasBeenUpdatedBeforeException, OptimisticLockException {
+            StockUpdateTimestampCannotBeInFutureException, InvalidQuantityException, StockHasBeenUpdatedBeforeException, OptimisticLockException {
         logger.debug("Updating stock.");
 
-        validateNewStock(stockUuid, productId, updateTimestamp);
+        this.validateNewStock(stockUuid, productId, newQuantity, updateTimestamp);
 
         StockEntity stockToBeUpdated = this.stockRepository.findByIdAndProduct_Name(stockUuid, productId);
         int oldQuantity = stockToBeUpdated.getQuantity();
@@ -77,30 +77,39 @@ public class StockManagerServiceImpl implements StockManagerService {
         logger.debug("Updated stock.");
     }
 
-    private void validateNewStock(UUID stockUuid, String productId, ZonedDateTime updateTimestamp) throws StockHasBeenUpdatedBeforeException {
+    private void validateNewStock(UUID stockUuid, String productId, Integer newQuantity, ZonedDateTime updateTimestamp) throws StockHasBeenUpdatedBeforeException {
         logger.debug("Validating new stock.");
         if (updateTimestamp.isAfter(ZonedDateTime.now())) {
             throw new StockUpdateTimestampCannotBeInFutureException(updateTimestamp);
+        }
+        if (newQuantity < 0) {
+            throw new InvalidQuantityException(newQuantity);
         }
         ProductEntity productEntity = this.productRepository.findOne(productId);
         if (productEntity == null) {
             throw new ProductNotFoundException(productId);
         }
+
         StockEntity stockEntity = this.stockRepository.findOne(stockUuid);
         if (stockEntity == null) {
             throw new StockNotFoundException(stockUuid);
         }
+
         if (!stockEntity.getProduct().getName().equals(productEntity.getName())) {
             throw new StockNotBelongToProductException(stockUuid, productId);
         }
+
         if (stockEntity.getDateUpdated().isAfter(updateTimestamp)) {
             throw new StockHasBeenUpdatedBeforeException(stockUuid);
         }
         logger.debug("Validated new stock.");
     }
 
+    // In more complex example it could be better to have Domain Objects and map result into these objects
+    // in order to eliminate service layer's dependency over controller layer objects (e.g. response DTOs).
+    // By doing so, service layer interface signature being specific to a certain controller can be eliminated. (In this case 'requestTimestamp')
     @Override
-    public ProductResponseDto getStockOfProduct(String productId) throws ProductNotFoundException {
+    public ProductResponseDto getStockOfProduct(String productId, ZonedDateTime requestTimestamp) throws ProductNotFoundException {
         logger.debug("Fetching stock of product.");
 
         ProductEntity productEntity = this.productRepository.findOne(productId);
@@ -109,30 +118,25 @@ public class StockManagerServiceImpl implements StockManagerService {
         }
 
         StockEntity stockEntity = productEntity.getStockEntitySet().iterator().next();
-        ProductResponseDto productResponseDto = this.productMapper.toDto(productEntity, stockEntity);
+        ProductResponseDto productResponseDto = this.productMapper.toDto(productEntity, stockEntity, requestTimestamp);
 
         logger.debug("Fetched stock of product.");
         return productResponseDto;
     }
 
     @Override
-    public StatisticsResponseDto getStatistics(TimeSpan timeSpan) {
-        logger.debug("Fetching statistics.");
+    public StatisticsResponseDto calculateStatistics(TimeSpan timeSpan, ZonedDateTime requestTimestamp) {
+        logger.debug("Calculating statistics.");
 
-        ZonedDateTime timeSpanAgo = DateUtil.getStartDateOfTimeSpanFromNow(timeSpan);
+        ZonedDateTime timeSpanAgo = DateUtil.getStartDateOfTimeSpanFrom(timeSpan, requestTimestamp);
 
         List<StockEntity> topAvailableStockEntityList = this.stockRepository.findAll(new PageRequest(0, stockManagerProperties.getTopAvailableProductCountToShow(), Sort.Direction.DESC, "quantity")).getContent();
         Set<TopSellingProductEntity> topSellingProductEntitySet = this.topSellingEntityRepository.findTopSellingProducts(timeSpanAgo, stockManagerProperties.getTopSellingProductCountToShow());
 
-        StatisticsResponseDto statisticsResponseDto = this.mapToStatisticsResponseDto(timeSpan, topAvailableStockEntityList, topSellingProductEntitySet);
+        StatisticsResponseDto statisticsResponseDto = mapToStatisticsResponseDto(timeSpan, requestTimestamp, topAvailableStockEntityList, topSellingProductEntitySet);
 
-        logger.debug("Fetched statistics.");
+        logger.debug("Calculated statistics.");
         return statisticsResponseDto;
     }
 
-    private StatisticsResponseDto mapToStatisticsResponseDto(TimeSpan timeSpan, List<StockEntity> topAvailableStockEntityList, Set<TopSellingProductEntity> topSellingProductEntitySet) {
-        Set<ProductStockDto> topAvailableProductsSet = topAvailableStockEntityList.stream().map(e -> new ProductStockDto(e.getId(), e.getDateUpdated(), e.getProduct().getName(), e.getQuantity())).collect(Collectors.toSet());
-        Set<TopSellingProductResponseDto> topSellingProductsSet = topSellingProductEntitySet.stream().map(e -> new TopSellingProductResponseDto(e.getProductName(), e.getItemsSold())).collect(Collectors.toSet());
-        return new StatisticsResponseDto(null, timeSpan, topAvailableProductsSet, topSellingProductsSet);
-    }
 }

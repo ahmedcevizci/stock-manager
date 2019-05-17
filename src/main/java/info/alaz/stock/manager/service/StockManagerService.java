@@ -13,9 +13,10 @@ public interface StockManagerService {
 
     void updateStock(UUID stockUuid, String productId, Integer newQuantity, ZonedDateTime updateTimestamp)
             throws StockNotFoundException, ProductNotFoundException, StockNotBelongToProductException,
-            StockUpdateTimestampCannotBeInFutureException, StockHasBeenUpdatedBeforeException, OptimisticLockException;
+            StockUpdateTimestampCannotBeInFutureException, InvalidQuantityException,
+            StockHasBeenUpdatedBeforeException, OptimisticLockException;
 
-    ProductResponseDto getStockOfProduct(String productId) throws ProductNotFoundException;
+    ProductResponseDto getStockOfProduct(String productId, ZonedDateTime requestTimestamp) throws ProductNotFoundException;
 
-    StatisticsResponseDto getStatistics(TimeSpan timeSpan);
+    StatisticsResponseDto calculateStatistics(TimeSpan timeSpan, ZonedDateTime requestTimestamp);
 }

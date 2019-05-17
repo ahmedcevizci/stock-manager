@@ -27,17 +27,15 @@ import javax.validation.Valid;
 import java.time.ZonedDateTime;
 
 import static info.alaz.stock.manager.constant.APIOperationMessages.*;
-import static info.alaz.stock.manager.web.restless.StockManagerRestlessController.BASE_RESTLESS_API_PATH;
+
+import static info.alaz.stock.manager.web.ParentStockManagerController.BASE_API_PATH;
 import static org.springframework.http.HttpStatus.OK;
 
 @Api(tags = {APITags.RESTLESS_STOCK_MANAGER_TAG})
 @RestController
-@RequestMapping(value = BASE_RESTLESS_API_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+@RequestMapping(value = BASE_API_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = ParentStockManagerController.STOCK_MANAGER_V1_RESPONSE_MEDIA_TYPE)
 public class StockManagerRestlessController extends ParentStockManagerController {
-
-    public static final String BASE_RESTLESS_API_PATH = "/api/stock-manager/restless";
-
 
     private Logger logger = LoggerFactory.getLogger(StockManagerRestlessController.class);
 
@@ -54,7 +52,7 @@ public class StockManagerRestlessController extends ParentStockManagerController
             @ApiResponse(code = 404, message = APIErrorMessages.STOCK_NOT_FOUND + "\n" + APIErrorMessages.PRODUCT_NOT_FOUND + "\n" +
                     APIErrorMessages.STOCK_NOT_BELONGS_TO_PRODUCT)
     })
-    @PostMapping(path = "/updateStock")
+    @PostMapping(path = "/restless/updateStock")
     public ResponseEntity<Void> updateStock(@Valid @RequestBody ProductStockDto productStockDto) throws Exception {
 
         logger.info(String.format("Updating stockId: %s for product: %s", productStockDto.getId().toString(), productStockDto.getProductId()));
@@ -83,14 +81,12 @@ public class StockManagerRestlessController extends ParentStockManagerController
             @ApiResponse(code = 404, message = APIErrorMessages.PRODUCT_NOT_FOUND)
     })
     @ResponseStatus(OK)
-    @GetMapping(path = "/stock")
+    @GetMapping(path = "/restless/stock")
     public ProductResponseDto getStockOfProduct(@RequestParam(value = PARAM_PRODUCT_ID) String productId) throws Exception {
 
         logger.info(String.format("Fetching stock of product: %s", productId));
 
-        ZonedDateTime requestTimestamp = ZonedDateTime.now();
-        ProductResponseDto productResponseDto = this.stockManagerService.getStockOfProduct(productId);
-        productResponseDto.setRequestTimestamp(requestTimestamp);
+        ProductResponseDto productResponseDto = this.stockManagerService.getStockOfProduct(productId, ZonedDateTime.now());
 
         logger.info(String.format("Fetched stock of product: %s", productId));
 
@@ -103,13 +99,12 @@ public class StockManagerRestlessController extends ParentStockManagerController
             @ApiResponse(code = 200, message = APIOperationMessages.SUCCESS_CALCULATING_STATISTICS),
             @ApiResponse(code = 400, message = APIErrorMessages.UNDEFINED_TIME_SPAN)})
     @ResponseStatus(OK)
-    @GetMapping(path = "/statistics")
+    @GetMapping(path = "/restless/statistics")
     public StatisticsResponseDto getStatistics(@RequestParam(value = PARAM_TIME) TimeSpan timeSpan) throws Exception {
 
         logger.info(String.format("Fetching statistics of %s", timeSpan.name()));
 
-        StatisticsResponseDto statisticsResponseDto = this.stockManagerService.getStatistics(timeSpan);
-        statisticsResponseDto.setRequestTimestamp(ZonedDateTime.now());
+        StatisticsResponseDto statisticsResponseDto = this.stockManagerService.calculateStatistics(timeSpan, ZonedDateTime.now());
 
         logger.info(String.format("Fetched statistics of %s", timeSpan.name()));
         return statisticsResponseDto;
