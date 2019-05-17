@@ -33,6 +33,8 @@ The unit tests in this project will test the consumer, producer and the implemen
 mvn test
 ```
 
+Unit test, mutation test code coverage report 'pit-test' can be found in generated target folder.
+
 #### End to end (E2E) tests
 The E2E tests in this project will test whole API endpoints to ensure quality criteria are met defined by API design. There are two E2E test available, these are 'RestlessStockManagerE2e' and 'RestfulStockManagerE2e'. When running these test, Docker container that contains PostgreSQL DB will be automatically stated.
 
