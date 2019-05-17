@@ -34,14 +34,10 @@ mvn test
 ```
 
 #### End to end (E2E) tests
-The E2E tests in this project will test whole API endpoints to ensure quality criteria are met defined by API design. To run these tests you can run the following command
-
-```
-mvn verify
-```
+The E2E tests in this project will test whole API endpoints to ensure quality criteria are met defined by API design. There are two E2E test available, these are 'RestlessStockManagerE2e' and 'RestfulStockManagerE2e'. When running these test, Docker container that contains PostgreSQL DB will be automatically stated.
 
 ### Running Project Locally
-For running it locally, run following command in directory where `docker-compose.yml` file is located in order to provide runtime dependencies required for Stock Manager API.
+For running it locally, run following command in directory where `docker-compose.yml` file is located in order to provide runtime dependencies (PostgreSQL DB) required for Stock Manager API.
 
 ``` 
 docker-compose up

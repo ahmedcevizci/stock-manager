@@ -44,7 +44,7 @@ public class StockManagerRestfulController extends ParentStockManagerController 
     @ApiOperation(value = API_OPS_UPDATE_STOCK_OF_PRODUCT)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = APIOperationMessages.SUCCESS_STOCK_UPDATED),
-            @ApiResponse(code = 400, message = APIErrorMessages.STOCK_UPDATE_TIME_CANNOT_BE_IN_FUTURE),
+            @ApiResponse(code = 400, message = APIErrorMessages.STOCK_UPDATE_TIME_CANNOT_BE_IN_FUTURE + "\n" + APIErrorMessages.QUANTITY_CANNOT_BE_NEGATIVE),
             @ApiResponse(code = 404, message = APIErrorMessages.STOCK_NOT_FOUND + "\n" + APIErrorMessages.PRODUCT_NOT_FOUND + "\n" +
                     APIErrorMessages.STOCK_NOT_BELONGS_TO_PRODUCT),
             @ApiResponse(code = 409, message = APIErrorMessages.STOCK_UPDATED_IN_THE_MEAN_TIME),

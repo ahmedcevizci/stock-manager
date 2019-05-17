@@ -47,7 +47,7 @@ public class StockManagerRestlessController extends ParentStockManagerController
     @ApiOperation(value = API_OPS_UPDATE_STOCK_OF_PRODUCT)
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = APIOperationMessages.SUCCESS_STOCK_UPDATED),
-            @ApiResponse(code = 204, message = APIErrorMessages.STOCK_UPDATED_IN_THE_MEAN_TIME),
+            @ApiResponse(code = 204, message = APIErrorMessages.STOCK_UPDATED_IN_THE_MEAN_TIME + "\n" + APIErrorMessages.QUANTITY_CANNOT_BE_NEGATIVE),
             @ApiResponse(code = 400, message = APIErrorMessages.STOCK_UPDATE_TIME_CANNOT_BE_IN_FUTURE),
             @ApiResponse(code = 404, message = APIErrorMessages.STOCK_NOT_FOUND + "\n" + APIErrorMessages.PRODUCT_NOT_FOUND + "\n" +
                     APIErrorMessages.STOCK_NOT_BELONGS_TO_PRODUCT)
@@ -57,7 +57,6 @@ public class StockManagerRestlessController extends ParentStockManagerController
 
         logger.info(String.format("Updating stockId: %s for product: %s", productStockDto.getId().toString(), productStockDto.getProductId()));
         try {
-
             this.stockManagerService.updateStock(productStockDto.getId(), productStockDto.getProductId(), productStockDto.getQuantity(), productStockDto.getTimestamp());
             logger.info(String.format("Updated stockId: %s for product: %s", productStockDto.getId().toString(), productStockDto.getProductId()));
             return new ResponseEntity<>(HttpStatus.CREATED);

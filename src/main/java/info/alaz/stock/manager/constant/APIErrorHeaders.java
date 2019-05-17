@@ -7,5 +7,5 @@ public class APIErrorHeaders {
     public static final String STOCK_NOT_BELONGS_TO_PRODUCT = "StockNotBelongsToProduct";
     public static final String STOCK_UPDATED_BY_ANOTHER_REQUEST = "StockUpdatedByAnotherRequest";
     public static final String STOCK_UPDATE_TIMESTAMP_CANNOT_BE_IN_FUTURE = "StockUpdateCannotBeInFuture";
-
+    public static final String STOCK_QUANTITY_CANNOT_BE_NEGATIVE = "StockQuantityCannotBeNegative";
 }

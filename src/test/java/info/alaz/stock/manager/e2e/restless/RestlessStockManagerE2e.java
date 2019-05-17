@@ -27,8 +27,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 
-import static info.alaz.stock.manager.TestObjectCreator.EXISTING_PRODUCT_ID1;
-import static info.alaz.stock.manager.TestObjectCreator.EXISTING_STOCK_ID1;
+import static info.alaz.stock.manager.TestObjectCreator.*;
 
 @RunWith(SpringIntegrationSerenityRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -81,27 +80,86 @@ public class RestlessStockManagerE2e {
     @Test
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_old_update_timestamp_get_204() throws Exception {
+        //Given
+        ProductStockDto productStockDto = new ProductStockDto(EXISTING_STOCK_ID1, ZonedDateTime.now().minusMonths(1), EXISTING_PRODUCT_ID1, 120);
+
+        //When
+        restlessStockManagerSteps.updateStockOfProduct(productStockDto);
+
+        //Then
+        restlessStockManagerSteps.validateHttpStatus(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_unknown_product_id_and_get_404() throws Exception {
+        //Given
+        ProductStockDto productStockDto = new ProductStockDto(EXISTING_STOCK_ID1, ZonedDateTime.now().minusMonths(1), NOT_EXISTING_PRODUCT_ID, 120);
+
+        //When
+        restlessStockManagerSteps.updateStockOfProduct(productStockDto);
+
+        //Then
+        restlessStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_unknown_stock_id_and_get_404() throws Exception {
+        //Given
+        ProductStockDto productStockDto = new ProductStockDto(NOT_EXISTING_STOCK_ID, ZonedDateTime.now().minusMonths(1), EXISTING_PRODUCT_ID1, 120);
+
+        //When
+        restlessStockManagerSteps.updateStockOfProduct(productStockDto);
+
+        //Then
+        restlessStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_mismatched_product_id_stock_id_and_get_404() throws Exception {
+        //Given
+        ProductStockDto productStockDto = new ProductStockDto(EXISTING_STOCK_ID1, ZonedDateTime.now().minusMonths(1), EXISTING_PRODUCT_ID2, 120);
+
+        //When
+        restlessStockManagerSteps.updateStockOfProduct(productStockDto);
+
+        //Then
+        restlessStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
     public void as_user_I_want_to_get_current_stock_of_a_product() throws Exception {
         //Given
 
         //When
         restlessStockManagerSteps.getStockOfAProduct(EXISTING_PRODUCT_ID1);
 
-        restlessStockManagerSteps.validateProductResponseDto(EXISTING_PRODUCT_ID1);
-//TODO
-        /*
-     {
-    "productId": "vegetable-121",
-    "requestTimestamp": "2019-05-15T00:31:18.317+0200",
-    "stock": {
-        "id": "3f01795c-2b80-4e90-8065-0767a11588ed",
-        "timestamp": "2019-04-21T15:05:21.000+0200",
-        "quantity": 500
-    }
-}
-*/
         //Then
         restlessStockManagerSteps.validateHttpStatus(HttpStatus.OK);
+        restlessStockManagerSteps.validateProduct(EXISTING_PRODUCT_ID1, EXISTING_STOCK_ID1, "2019-04-21T15:05:21.000+0200", 500);
+    }
+
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_get_current_stock_of_a_product_with_unknown_product_id_and_get_404() throws Exception {
+        //Given
+
+        //When
+        restlessStockManagerSteps.getStockOfAProduct(NOT_EXISTING_PRODUCT_ID);
+
+        //Then
+        restlessStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -112,34 +170,9 @@ public class RestlessStockManagerE2e {
 
         //When
         restlessStockManagerSteps.getStatisticsAboutProductsInStock(TimeSpan.TODAY);
-/*{
-    "requestTimestamp": "2019-05-17T02:26:22.820+0200",
-    "timeSpan": "TODAY",
-    "topAvailableProducts": [
-        {
-            "id": "d081fc48-332b-46d8-8b22-45eb8e02cc04",
-            "timestamp": "2019-04-24T18:05:24.000+0200",
-            "productId": "vegetable-124",
-            "quantity": 800
-        },
-        {
-            "id": "c081fc48-332b-46d8-8b22-35eb8e02cc03",
-            "timestamp": "2019-04-23T17:05:23.000+0200",
-            "productId": "vegetable-123",
-            "quantity": 700
-        },
-        {
-            "id": "920dddec-0900-4f8d-b4f1-a05ddeaa4159",
-            "timestamp": "2019-04-22T16:05:22.000+0200",
-            "productId": "vegetable-122",
-            "quantity": 600
-        }
-    ],
-    "topSellingProducts": [
 
-    ]
-}*/
         //Then
+        restlessStockManagerSteps.validateStatisticsOfToday();
         restlessStockManagerSteps.validateHttpStatus(HttpStatus.OK);
     }
 
@@ -152,47 +185,9 @@ public class RestlessStockManagerE2e {
         //When
         restlessStockManagerSteps.getStatisticsAboutProductsInStock(TimeSpan.LAST_MONTH);
 
-        restlessStockManagerSteps.validateStatisticsResponseDto(TimeSpan.LAST_MONTH);
-/*{
-    "requestTimestamp": "2019-05-17T02:26:13.426+0200",
-    "timeSpan": "LAST_MONTH",
-    "topAvailableProducts": [
-        {
-            "id": "d081fc48-332b-46d8-8b22-45eb8e02cc04",
-            "timestamp": "2019-04-24T18:05:24.000+0200",
-            "productId": "vegetable-124",
-            "quantity": 800
-        },
-        {
-            "id": "c081fc48-332b-46d8-8b22-35eb8e02cc03",
-            "timestamp": "2019-04-23T17:05:23.000+0200",
-            "productId": "vegetable-123",
-            "quantity": 700
-        },
-        {
-            "id": "920dddec-0900-4f8d-b4f1-a05ddeaa4159",
-            "timestamp": "2019-04-22T16:05:22.000+0200",
-            "productId": "vegetable-122",
-            "quantity": 600
-        }
-    ],
-    "topSellingProducts": [
-        {
-            "productId": "vegetable-123",
-            "itemsSold": 205
-        },
-        {
-            "productId": "vegetable-121",
-            "itemsSold": 35
-        },
-        {
-            "productId": "vegetable-122",
-            "itemsSold": 105
-        }
-    ]
-}*/
         //Then
         restlessStockManagerSteps.validateHttpStatus(HttpStatus.OK);
+        restlessStockManagerSteps.validateStatisticsOfLastMonth();
     }
 
 }

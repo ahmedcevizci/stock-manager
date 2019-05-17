@@ -19,7 +19,7 @@ import java.util.UUID;
                 " WHERE fld_quantity_change < 0 AND fld_date_changed > ?1 " +
                 " GROUP BY fld_stock_id ORDER BY sold_quantity DESC)" +
                 " SELECT tss.fld_stock_id, s.fld_product_id, tss.sold_quantity FROM tbl_top_selling_stock tss, tbl_stock s" +
-                " WHERE tss.fld_stock_id = s.fld_uuid LIMIT ?2")
+                " WHERE tss.fld_stock_id = s.fld_uuid ORDER BY tss.sold_quantity DESC LIMIT ?2")
 @SqlResultSetMapping(
         name = "topSellingProductResultMapping",
         entities = @EntityResult(

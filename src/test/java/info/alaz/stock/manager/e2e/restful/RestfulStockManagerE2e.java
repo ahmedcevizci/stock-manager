@@ -27,8 +27,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 
-import static info.alaz.stock.manager.TestObjectCreator.EXISTING_PRODUCT_ID1;
-import static info.alaz.stock.manager.TestObjectCreator.EXISTING_STOCK_ID1;
+import static info.alaz.stock.manager.TestObjectCreator.*;
 
 @RunWith(SpringIntegrationSerenityRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -81,26 +80,86 @@ public class RestfulStockManagerE2e {
     @Test
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_old_update_timestamp_and_get_409() throws Exception {
+        //Given
+        StockUpdateRequestDto stockUpdateRequestDto = new StockUpdateRequestDto(ZonedDateTime.now().minusMonths(1), 120);
+
+        //When
+        restfulStockManagerSteps.updateStockOfProduct(EXISTING_PRODUCT_ID1, EXISTING_STOCK_ID1, stockUpdateRequestDto);
+
+        //Then
+        restfulStockManagerSteps.validateHttpStatus(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_unknown_product_id_and_get_404() throws Exception {
+        //Given
+        StockUpdateRequestDto stockUpdateRequestDto = new StockUpdateRequestDto(ZonedDateTime.now().minusMonths(1), 120);
+
+        //When
+        restfulStockManagerSteps.updateStockOfProduct(NOT_EXISTING_PRODUCT_ID, EXISTING_STOCK_ID1, stockUpdateRequestDto);
+
+        //Then
+        restfulStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_unknown_stock_id_and_get_404() throws Exception {
+        //Given
+        StockUpdateRequestDto stockUpdateRequestDto = new StockUpdateRequestDto(ZonedDateTime.now().minusMonths(1), 120);
+
+        //When
+        restfulStockManagerSteps.updateStockOfProduct(EXISTING_PRODUCT_ID1, NOT_EXISTING_STOCK_ID, stockUpdateRequestDto);
+
+        //Then
+        restfulStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_update_stock_of_a_product_with_mismatched_product_id_stock_id_and_get_404() throws Exception {
+        //Given
+        StockUpdateRequestDto stockUpdateRequestDto = new StockUpdateRequestDto(ZonedDateTime.now().minusMonths(1), 120);
+
+        //When
+        restfulStockManagerSteps.updateStockOfProduct(EXISTING_PRODUCT_ID1, EXISTING_STOCK_ID2, stockUpdateRequestDto);
+
+        //Then
+        restfulStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
     public void as_user_I_want_to_get_current_stock_of_a_product() throws Exception {
         //Given
 
         //When
         restfulStockManagerSteps.getStockOfAProduct(EXISTING_PRODUCT_ID1);
-//TODO
-        /*
-     {
-    "productId": "vegetable-121",
-    "requestTimestamp": "2019-05-15T00:31:18.317+0200",
-    "stock": {
-        "id": "3f01795c-2b80-4e90-8065-0767a11588ed",
-        "timestamp": "2019-04-21T15:05:21.000+0200",
-        "quantity": 500
-    }
-}
-*/
+
         //Then
+        restfulStockManagerSteps.validateProduct(EXISTING_PRODUCT_ID1, EXISTING_STOCK_ID1, "2019-04-21T15:05:21.000+0200", 500);
         restfulStockManagerSteps.validateHttpStatus(HttpStatus.OK);
     }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD, scripts = "classpath:testscripts/clearDB.sql")
+    public void as_user_I_want_to_get_current_stock_of_a_product_with_unknown_product_id_and_get_404() throws Exception {
+        //Given
+
+        //When
+        restfulStockManagerSteps.getStockOfAProduct(NOT_EXISTING_PRODUCT_ID);
+
+        //Then
+        restfulStockManagerSteps.validateHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
 
     @Test
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:testscripts/fillDB.sql")
@@ -112,6 +171,7 @@ public class RestfulStockManagerE2e {
         restfulStockManagerSteps.getStatisticsAboutProductsInStock(TimeSpan.TODAY);
 
         //Then
+        restfulStockManagerSteps.validateStatisticsOfToday();
         restfulStockManagerSteps.validateHttpStatus(HttpStatus.OK);
     }
 
@@ -126,6 +186,7 @@ public class RestfulStockManagerE2e {
 
         //Then
         restfulStockManagerSteps.validateHttpStatus(HttpStatus.OK);
+        restfulStockManagerSteps.validateStatisticsOfLastMonth();
     }
 
 }
